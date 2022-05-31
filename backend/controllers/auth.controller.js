@@ -4,6 +4,7 @@ const registerModel = require('../models/auth.model');
 const fs = require('fs');
 const bcrypt = require('bcrypt');
 const path = require('path');
+const jwt = require('jsonwebtoken');
 
 const isFileValid = (file) => {
   const type = file.originalFilename.split('.').pop();
@@ -30,10 +31,11 @@ module.exports.userRegister = (req, res) => {
     const isValid = isFileValid(image);
 
     if (!isValid) {
+      fs.unlinkSync(image.filepath);
       // throes error if file isn't valid
       return res.status(400).json({
         status: 'Fail',
-        message: 'The file type is not a valid type',
+        errorMessage: 'The file type is not a valid type',
       });
     }
 
@@ -62,9 +64,10 @@ module.exports.userRegister = (req, res) => {
       error.push('Please provide user image');
     }
     if (error.length > 0) {
+      fs.unlinkSync(image.filepath);
       return res.status(400).json({
         status: 'Fail',
-        errors: error,
+        errorMessage: error,
       });
     }
 
@@ -72,26 +75,55 @@ module.exports.userRegister = (req, res) => {
     const newImageName = new Date().getTime() + '_' + getImageName;
 
     try {
+      //Check email exists
       const checkUser = await registerModel.findOne({ email: email });
 
       if (checkUser) {
+        fs.unlinkSync(image.filepath);
         return res.status(404).json({
           error: { errorMessage: 'Your email has aleady exists' },
         });
       }
 
+      //Rename file && add ext
       fs.renameSync(image.filepath, path.join(uploadFolder, newImageName));
       files.image.originalFilename = newImageName;
       files.image.filepath =
         process.cwd() + `/server/public/image/${files.image.originalFilename}`;
+
+      //Create new user in database
       const newUser = await registerModel.create({
         username,
         email,
         password: await bcrypt.hash(password, 10),
         image: '/image/' + image.originalFilename,
       });
-      res.status(200).json(newUser);
+
+      //Sign token
+      const token = jwt.sign(
+        { id: newUser._id, email: newUser.email, username: newUser.username },
+        process.env.SECRET_KEY,
+        {
+          expiresIn: process.env.TOKEN_EXPIRES,
+        }
+      );
+
+      res
+        .status(200)
+        .cookie('authToken', token, {
+          httpOnly: true,
+          secure: true,
+          expires: new Date(
+            Date.now() + process.env.COOKIE_EXP * 24 * 60 * 60 * 1000
+          ),
+        })
+        .json({
+          status: 'Success',
+          message: 'Your register successful',
+          token,
+        });
     } catch (error) {
+      fs.unlinkSync(image.filepath);
       console.log(error);
       res.status(500).json({
         status: 'Fail',
