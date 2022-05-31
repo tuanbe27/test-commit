@@ -6,7 +6,7 @@ const authRoute = require("./routes/auth.route");
 
 const PORT = process.env.PORT || 3001;
 
-app.use(express.static(process.cwd() + "/server/public"));
+app.use(express.static(__dirname + "/public"));
 
 app.get("/", (_, res) => {
   res.send("<h1>Wellcome to my chat application</h1>");
