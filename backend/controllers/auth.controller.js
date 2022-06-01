@@ -66,7 +66,7 @@ module.exports.userRegister = (req, res) => {
       // throes error if file isn't valid
       return res.status(400).json({
         status: 'Fail',
-        message: 'The file type is not a valid type',
+        errorMessage: 'The file type is not a valid type',
       });
     }
 
@@ -80,7 +80,7 @@ module.exports.userRegister = (req, res) => {
       if (checkUser) {
         fs.unlinkSync(image.filepath);
         return res.status(404).json({
-          error: { errorMessage: 'Your email has aleady exists' },
+          errorMessage: 'Your email has aleady exists',
         });
       }
 

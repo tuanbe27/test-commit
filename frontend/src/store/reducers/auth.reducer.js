@@ -1,12 +1,17 @@
-import { REGISTER_FAIL, REGISTER_SUCCESS } from "../types/auth.type";
-import jwtDecode from "jwt-decode";
+import {
+  REGISTER_FAIL,
+  REGISTER_SUCCESS,
+  ERROR_CLEAR,
+  MESSAGE_CLEAR,
+} from '../types/auth.type';
+import jwtDecode from 'jwt-decode';
 
 const authState = {
   loading: true,
   authenticate: false,
-  error: "",
-  message: "",
-  myInfo: "",
+  error: '',
+  message: '',
+  myInfo: '',
 };
 
 const tokenDecode = (token) => {
@@ -18,6 +23,16 @@ const tokenDecode = (token) => {
   return tokenDecoded;
 };
 
+const getToken = localStorage.getItem('authToken');
+if (getToken) {
+  const getInfo = tokenDecode(getToken);
+  if (getInfo) {
+    authState.myInfo = getInfo;
+    authState.authenticate = true;
+    authState.loading = false;
+  }
+}
+
 export const authReducer = (state = authState, action) => {
   const { payload, type } = action;
 
@@ -26,7 +41,7 @@ export const authReducer = (state = authState, action) => {
       ...state,
       error: payload.error,
       authenticate: false,
-      myInfo: "",
+      myInfo: '',
       loading: true,
     };
   }
@@ -35,12 +50,27 @@ export const authReducer = (state = authState, action) => {
     const myInfo = tokenDecode(payload.token);
     return {
       ...state,
-      error: "",
+      error: '',
       authenticate: true,
       myInfo: myInfo,
       message: payload.message,
       loading: false,
     };
   }
+
+  if (type === MESSAGE_CLEAR) {
+    return {
+      ...state,
+      message: '',
+    };
+  }
+
+  if (type === ERROR_CLEAR) {
+    return {
+      ...state,
+      error: '',
+    };
+  }
+
   return state;
 };

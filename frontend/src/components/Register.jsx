@@ -1,19 +1,29 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { userRegister } from "../store/actions/auth.action";
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { userRegister } from '../store/actions/auth.action';
+import { useAlert } from 'react-alert';
+import { ERROR_CLEAR, MESSAGE_CLEAR } from '../store/types/auth.type';
 
 const Register = () => {
+  const navigate = useNavigate();
+  const alert = useAlert();
+
+  const { loading, authenticate, error, message, myInfo } = useSelector(
+    (state) => state.auth
+  );
+
   const dispatch = useDispatch();
+
   const [registerInputData, setRegisterInputData] = useState({
-    username: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    image: "",
+    username: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    image: '',
   });
 
-  const [loadImage, setLoadImage] = useState("");
+  const [loadImage, setLoadImage] = useState('');
 
   const inputHandle = (e) => {
     setRegisterInputData({
@@ -42,14 +52,28 @@ const Register = () => {
       registerInputData;
     e.preventDefault();
     const formData = new FormData();
-    formData.append("username", username);
-    formData.append("email", email);
-    formData.append("password", password);
-    formData.append("confirmPassword", confirmPassword);
-    formData.append("image", image);
+    formData.append('username', username);
+    formData.append('email', email);
+    formData.append('password', password);
+    formData.append('confirmPassword', confirmPassword);
+    formData.append('image', image);
 
     dispatch(userRegister(formData));
   };
+
+  useEffect(() => {
+    if (authenticate) {
+      navigate('/');
+    }
+    if (message) {
+      alert.success(message);
+      dispatch({ type: MESSAGE_CLEAR });
+    }
+    if (error) {
+      error.map((err) => alert.error(err));
+      dispatch({ type: ERROR_CLEAR });
+    }
+  }, [alert, message, error, authenticate, navigate, dispatch]);
 
   return (
     <div className="register">
@@ -111,7 +135,7 @@ const Register = () => {
             <div className="form-group">
               <div className="file-image">
                 <div className="image">
-                  {loadImage ? <img src={loadImage} alt="" /> : ""}
+                  {loadImage ? <img src={loadImage} alt="" /> : ''}
                 </div>
                 <div className="file">
                   <label htmlFor="image">Select Image</label>

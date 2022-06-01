@@ -1,8 +1,8 @@
-import { compose, combineReducers, applyMiddleware } from "redux";
-import { configureStore } from "@reduxjs/toolkit";
-import thunkMiddleware from "redux-thunk";
+import { compose, combineReducers, applyMiddleware } from 'redux';
+import { configureStore } from '@reduxjs/toolkit';
+import thunkMiddleware from 'redux-thunk';
 
-import { authReducer } from "./reducers/auth.reducer.js";
+import { authReducer } from './reducers/auth.reducer.js';
 const middleware = [thunkMiddleware];
 
 const rootReducer = combineReducers({ auth: authReducer });
