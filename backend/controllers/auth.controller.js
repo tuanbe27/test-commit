@@ -1,6 +1,6 @@
 const formidable = require('formidable');
 const validator = require('validator');
-const registerModel = require('../models/auth.model');
+const User = require('../models/auth.model');
 const fs = require('fs');
 const bcrypt = require('bcrypt');
 const path = require('path');
@@ -75,7 +75,7 @@ module.exports.userRegister = (req, res) => {
 
     try {
       //Check email exists
-      const checkUser = await registerModel.findOne({ email: email });
+      const checkUser = await User.findOne({ email: email });
 
       if (checkUser) {
         fs.unlinkSync(image.filepath);
@@ -91,7 +91,7 @@ module.exports.userRegister = (req, res) => {
         process.cwd() + `/server/public/image/${files.image.originalFilename}`;
 
       //Create new user in database
-      const newUser = await registerModel.create({
+      const newUser = await User.create({
         username,
         email,
         password: await bcrypt.hash(password, 10),
@@ -133,4 +133,67 @@ module.exports.userRegister = (req, res) => {
       });
     }
   });
+};
+
+module.exports.userLogin = async (req, res) => {
+  const { email, password } = req.body;
+  const error = [];
+  console.log(req.body);
+  if (!email) {
+    error.push('Please provide your email');
+  }
+  if (email && !validator.default.isEmail(email)) {
+    error.push('Please provide your username');
+  }
+  if (!password) {
+    error.push('Please provide your password');
+  }
+
+  if (error.length > 0) {
+    return res.status(400).json({
+      status: 'Fail',
+      errorMessage: error,
+    });
+  }
+
+  try {
+    const getUserInfo = await User.findOne({ email });
+
+    if (!getUserInfo) {
+      return res.status(404).json({
+        errorMessage: 'Your email is not registered',
+      });
+    }
+
+    const checkPassword = bcrypt.compareSync(getUserInfo.password, password);
+
+    if (!checkPassword) {
+      return res.status(404).json({
+        errorMessage: 'Your password is not exactly',
+      });
+    }
+
+    const token = jwt.sign(
+      {
+        id: getUserInfo._id,
+        email: getUserInfo.email,
+        username: getUserInfo.username,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES }
+    );
+
+    res.status(200).json({
+      status: 'Success',
+      message: 'Login Successful',
+      token,
+    });
+  } catch (error) {
+    console.log(error);
+    fs.unlinkSync(image.filepath);
+    res.status(500).json({
+      status: 'Fail',
+      errorMessage: error.message,
+    });
+  }
 };

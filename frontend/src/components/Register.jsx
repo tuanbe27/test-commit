@@ -6,10 +6,11 @@ import { useAlert } from 'react-alert';
 import { ERROR_CLEAR, MESSAGE_CLEAR } from '../store/types/auth.type';
 
 const Register = () => {
+  console.log('Register');
   const navigate = useNavigate();
   const alert = useAlert();
 
-  const { loading, authenticate, error, message, myInfo } = useSelector(
+  const { authenticate, error, message } = useSelector(
     (state) => state.auth
   );
 
@@ -154,7 +155,7 @@ const Register = () => {
             </div>
             <div className="form-group">
               <span>
-                <Link to="/messenger/login"> Login your account</Link>
+                <Link to="/auth/login"> Login your account</Link>
               </span>
             </div>
           </form>

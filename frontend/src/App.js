@@ -1,17 +1,20 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import Login from './components/Login';
 import Register from './components/Register';
+
 function App() {
+  const { authenticate } = useSelector((state) => state.auth);
+
   return (
     <div>
       <BrowserRouter>
         <Routes>
-          {/* <Route
-            path="/"
-            element={<Navigate to="/messenger/login" replace />}
-          /> */}
-          <Route path="/messenger/login" element={<Login />} />
-          <Route path="/messenger/register" element={<Register />} />
+          {!authenticate && (
+            <Route path="/" element={<Navigate to="/auth/login" replace />} />
+          )}
+          <Route path="/auth/login" element={<Login />} />
+          <Route path="/auth/register" element={<Register />} />
         </Routes>
       </BrowserRouter>
     </div>

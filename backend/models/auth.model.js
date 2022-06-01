@@ -1,6 +1,6 @@
-const { model, Schema } = require("mongoose");
+const { model, Schema } = require('mongoose');
 
-const registerSchema = new Schema(
+const userSchema = new Schema(
   {
     username: {
       type: String,
@@ -25,4 +25,4 @@ const registerSchema = new Schema(
   { timestamps: true }
 );
 
-module.exports = model("users", registerSchema);
+module.exports = model('users', userSchema);
