@@ -1,11 +1,21 @@
-import { REGISTER_FAIL } from '../types/auth.type';
+import { REGISTER_FAIL, REGISTER_SUCCESS } from "../types/auth.type";
+import jwtDecode from "jwt-decode";
 
 const authState = {
   loading: true,
   authenticate: false,
-  error: '',
-  message: '',
-  myInfo: '',
+  error: "",
+  message: "",
+  myInfo: "",
+};
+
+const tokenDecode = (token) => {
+  const tokenDecoded = jwtDecode(token);
+  const expTime = new Date(tokenDecoded.exp * 1000);
+  if (new Date() > expTime) {
+    return null;
+  }
+  return tokenDecoded;
 };
 
 export const authReducer = (state = authState, action) => {
@@ -16,8 +26,20 @@ export const authReducer = (state = authState, action) => {
       ...state,
       error: payload.error,
       authenticate: false,
-      myInfo: '',
+      myInfo: "",
       loading: true,
+    };
+  }
+
+  if (type === REGISTER_SUCCESS) {
+    const myInfo = tokenDecode(payload.token);
+    return {
+      ...state,
+      error: "",
+      authenticate: true,
+      myInfo: myInfo,
+      message: payload.message,
+      loading: false,
     };
   }
   return state;

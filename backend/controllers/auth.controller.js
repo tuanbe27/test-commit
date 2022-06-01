@@ -27,18 +27,6 @@ module.exports.userRegister = (req, res) => {
     const { image } = files;
     const error = [];
 
-    // checks if the file is valid
-    const isValid = isFileValid(image);
-
-    if (!isValid) {
-      fs.unlinkSync(image.filepath);
-      // throes error if file isn't valid
-      return res.status(400).json({
-        status: 'Fail',
-        errorMessage: 'The file type is not a valid type',
-      });
-    }
-
     if (!username) {
       error.push('Please provide your username');
     }
@@ -64,10 +52,21 @@ module.exports.userRegister = (req, res) => {
       error.push('Please provide user image');
     }
     if (error.length > 0) {
-      fs.unlinkSync(image.filepath);
       return res.status(400).json({
         status: 'Fail',
         errorMessage: error,
+      });
+    }
+
+    // checks if the file is valid
+    const isValid = isFileValid(image);
+
+    if (!isValid) {
+      fs.unlinkSync(image.filepath);
+      // throes error if file isn't valid
+      return res.status(400).json({
+        status: 'Fail',
+        message: 'The file type is not a valid type',
       });
     }
 
@@ -99,14 +98,16 @@ module.exports.userRegister = (req, res) => {
         image: '/image/' + image.originalFilename,
       });
 
-      //Sign token
-      const token = jwt.sign(
-        { id: newUser._id, email: newUser.email, username: newUser.username },
-        process.env.SECRET_KEY,
-        {
-          expiresIn: process.env.TOKEN_EXPIRES,
-        }
-      );
+      const payload = {
+        id: newUser._id,
+        email: newUser.email,
+        username: newUser.username,
+        image: newUser.image,
+      };
+
+      const token = await jwt.sign(payload, process.env.JWT_SECRET, {
+        expiresIn: process.env.JWT_EXPIRES,
+      });
 
       res
         .status(200)
@@ -114,7 +115,7 @@ module.exports.userRegister = (req, res) => {
           httpOnly: true,
           secure: true,
           expires: new Date(
-            Date.now() + process.env.COOKIE_EXP * 24 * 60 * 60 * 1000
+            Date.now() + process.env.TOKEN_AGE * 24 * 60 * 60 * 1000
           ),
         })
         .json({
@@ -125,6 +126,7 @@ module.exports.userRegister = (req, res) => {
     } catch (error) {
       fs.unlinkSync(image.filepath);
       console.log(error);
+      fs.unlinkSync(image.filepath);
       res.status(500).json({
         status: 'Fail',
         errorMessage: error.message,
