@@ -36,7 +36,6 @@ export const userRegister = (data) => {
 };
 
 export const userLogin = (data) => {
-  console.log(data);
   return async (dispatch) => {
     const config = {
       headers: {

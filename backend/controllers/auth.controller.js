@@ -34,7 +34,7 @@ module.exports.userRegister = (req, res) => {
       error.push('Please provide your email');
     }
     if (email && !validator.default.isEmail(email)) {
-      error.push('Please provide your username');
+      error.push('Please provide your exactly email');
     }
     if (!password) {
       error.push('Please provide your password');
@@ -137,13 +137,13 @@ module.exports.userRegister = (req, res) => {
 
 module.exports.userLogin = async (req, res) => {
   const { email, password } = req.body;
+
   const error = [];
-  console.log(req.body);
   if (!email) {
     error.push('Please provide your email');
   }
   if (email && !validator.default.isEmail(email)) {
-    error.push('Please provide your username');
+    error.push('Please provide your exactly email');
   }
   if (!password) {
     error.push('Please provide your password');
@@ -157,7 +157,7 @@ module.exports.userLogin = async (req, res) => {
   }
 
   try {
-    const getUserInfo = await User.findOne({ email });
+    const getUserInfo = await User.findOne({ email }, { password: 1 });
 
     if (!getUserInfo) {
       return res.status(404).json({
@@ -165,7 +165,7 @@ module.exports.userLogin = async (req, res) => {
       });
     }
 
-    const checkPassword = bcrypt.compareSync(getUserInfo.password, password);
+    const checkPassword = await bcrypt.compare(password, getUserInfo.password);
 
     if (!checkPassword) {
       return res.status(404).json({
@@ -190,10 +190,9 @@ module.exports.userLogin = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    fs.unlinkSync(image.filepath);
     res.status(500).json({
       status: 'Fail',
-      errorMessage: error.message,
+      errorMessage: 'Internal Server Error',
     });
   }
 };

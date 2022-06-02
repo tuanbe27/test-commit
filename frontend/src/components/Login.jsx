@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAlert } from 'react-alert';
 import { useSelector, useDispatch } from 'react-redux';
-import { LOGIN_FAIL, LOGIN_SUCCESS } from '../store/types/auth.type';
+import { ERROR_CLEAR, MESSAGE_CLEAR } from '../store/types/auth.type';
 import { userLogin } from '../store/actions/auth.action';
 
 const Login = () => {
@@ -28,28 +28,29 @@ const Login = () => {
   const handleSubmitLogin = async (e) => {
     const { email, password } = loginFormInput;
     e.preventDefault();
-    const formData = new FormData();
-    formData.append('email', email);
-    formData.append('password', password);
+    const bodyData = { email, password };
 
-    dispatch(userLogin(formData));
+    dispatch(userLogin(bodyData));
   };
 
-  // useEffect(() => {
-  //   if (authenticate) {
-  //     navigate('/');
-  //   }
+  useEffect(() => {
+    if (authenticate) {
+      navigate('/');
+    }
 
-  //   if(message){
-  //     alert.success(message)
-  //     dispatch({type: LOGIN_SUCCESS})
-  //   }
+    if (message) {
+      alert.success(message);
+      dispatch({ type: MESSAGE_CLEAR });
+    }
 
-  //   if(error){
-  //     error.map(err=> alert.error(err))
-  //     dispatch({type: LOGIN_FAIL})
-  //   }
-  // }, [alert, authenticate, dispatch, error, message, navigate]);
+    if (error) {
+      console.log(typeof error);
+      typeof error === 'string'
+        ? alert.error(error)
+        : error.map((err) => alert.error(err));
+      dispatch({ type: ERROR_CLEAR });
+    }
+  }, [alert, authenticate, dispatch, error, message, navigate]);
 
   return (
     <div className="register">

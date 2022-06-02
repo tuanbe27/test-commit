@@ -10,9 +10,7 @@ const Register = () => {
   const navigate = useNavigate();
   const alert = useAlert();
 
-  const { authenticate, error, message } = useSelector(
-    (state) => state.auth
-  );
+  const { authenticate, error, message } = useSelector((state) => state.auth);
 
   const dispatch = useDispatch();
 
@@ -71,7 +69,9 @@ const Register = () => {
       dispatch({ type: MESSAGE_CLEAR });
     }
     if (error) {
-      error.map((err) => alert.error(err));
+      typeof error === String
+        ? alert.error(error)
+        : error.map((err) => alert.error(err));
       dispatch({ type: ERROR_CLEAR });
     }
   }, [alert, message, error, authenticate, navigate, dispatch]);
