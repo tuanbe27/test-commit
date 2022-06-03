@@ -5,6 +5,7 @@ const fs = require('fs');
 const bcrypt = require('bcrypt');
 const path = require('path');
 const jwt = require('jsonwebtoken');
+const { cloudinary } = require('../config/cloudinary');
 
 const isFileValid = (file) => {
   const type = file.originalFilename.split('.').pop();
@@ -23,11 +24,18 @@ module.exports.userRegister = (req, res) => {
   form.uploadDir = uploadFolder;
 
   form.parse(req, async (err, fields, files) => {
-    const { username, email, password, confirmPassword } = fields;
+    const { username, email, password, confirmPassword, firstName, lastName } =
+      fields;
     const { image } = files;
     const error = [];
 
     if (!username) {
+      error.push('Please provide your username');
+    }
+    if (!firstName) {
+      error.push('Please provide your username');
+    }
+    if (!lastName) {
       error.push('Please provide your username');
     }
     if (!email) {
@@ -52,6 +60,7 @@ module.exports.userRegister = (req, res) => {
       error.push('Please provide user image');
     }
     if (error.length > 0) {
+      fs.unlinkSync(image.filepath);
       return res.status(400).json({
         status: 'Fail',
         errorMessage: error,
@@ -70,10 +79,15 @@ module.exports.userRegister = (req, res) => {
       });
     }
 
-    const getImageName = files.image.originalFilename;
-    const newImageName = new Date().getTime() + '_' + getImageName;
-
     try {
+      const uploadToCloud = await cloudinary.v2.uploader.upload(
+        image.filepath,
+        {
+          filename_override: image.originalFilename,
+          unique_filename: false,
+        }
+      );
+
       //Check email exists
       const checkUser = await User.findOne({ email: email });
 
@@ -84,18 +98,14 @@ module.exports.userRegister = (req, res) => {
         });
       }
 
-      //Rename file && add ext
-      fs.renameSync(image.filepath, path.join(uploadFolder, newImageName));
-      files.image.originalFilename = newImageName;
-      files.image.filepath =
-        process.cwd() + `/server/public/image/${files.image.originalFilename}`;
-
       //Create new user in database
       const newUser = await User.create({
         username,
         email,
+        firstName,
+        lastName,
         password: await bcrypt.hash(password, 10),
-        image: '/image/' + image.originalFilename,
+        image: uploadToCloud.url,
       });
 
       const payload = {
@@ -103,12 +113,13 @@ module.exports.userRegister = (req, res) => {
         email: newUser.email,
         username: newUser.username,
         image: newUser.image,
+        fullName: lastName + ' ' + firstName,
       };
 
       const token = await jwt.sign(payload, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXPIRES,
       });
-
+      fs.unlinkSync(image.filepath);
       res
         .status(200)
         .cookie('authToken', token, {
@@ -126,7 +137,6 @@ module.exports.userRegister = (req, res) => {
     } catch (error) {
       fs.unlinkSync(image.filepath);
       console.log(error);
-      fs.unlinkSync(image.filepath);
       res.status(500).json({
         status: 'Fail',
         errorMessage: error.message,

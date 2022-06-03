@@ -3,9 +3,13 @@ import { configureStore } from '@reduxjs/toolkit';
 import thunkMiddleware from 'redux-thunk';
 
 import { authReducer } from './reducers/auth.reducer.js';
+import { messengerReducer } from './reducers/messenger.reducer.js';
 const middleware = [thunkMiddleware];
 
-const rootReducer = combineReducers({ auth: authReducer });
+const rootReducer = combineReducers({
+  auth: authReducer,
+  messenger: messengerReducer,
+});
 
 const store = configureStore(
   { reducer: rootReducer },

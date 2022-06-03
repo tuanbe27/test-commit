@@ -11,12 +11,12 @@ function App() {
     <div>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Messenger />} />
-          <Route path="/auth/login" element={<Login />} />
-          <Route path="/auth/register" element={<Register />} />
           {!authenticate && (
             <Route path="/" element={<Navigate to="/auth/login" replace />} />
           )}
+          <Route path="/" element={<Messenger />} />
+          <Route path="/auth/login" element={<Login />} />
+          <Route path="/auth/register" element={<Register />} />
         </Routes>
       </BrowserRouter>
     </div>

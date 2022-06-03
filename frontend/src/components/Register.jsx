@@ -16,6 +16,8 @@ const Register = () => {
 
   const [registerInputData, setRegisterInputData] = useState({
     username: '',
+    firstName: '',
+    lastName: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -47,8 +49,15 @@ const Register = () => {
   };
 
   const register = (e) => {
-    const { username, email, password, confirmPassword, image } =
-      registerInputData;
+    const {
+      username,
+      email,
+      password,
+      confirmPassword,
+      image,
+      firstName,
+      lastName,
+    } = registerInputData;
     e.preventDefault();
     const formData = new FormData();
     formData.append('username', username);
@@ -56,6 +65,8 @@ const Register = () => {
     formData.append('password', password);
     formData.append('confirmPassword', confirmPassword);
     formData.append('image', image);
+    formData.append('firstName', firstName);
+    formData.append('lastName', lastName);
 
     dispatch(userRegister(formData));
   };
@@ -85,6 +96,30 @@ const Register = () => {
 
         <div className="card-body">
           <form onSubmit={register}>
+            <div className="form-group">
+              <label htmlFor="firstName">First Name</label>
+              <input
+                type="text"
+                className="form-control"
+                onChange={inputHandle}
+                name="firstName"
+                value={registerInputData.firstName}
+                placeholder="First Name"
+                id="firstName"
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="lastName">Last Name</label>
+              <input
+                type="text"
+                className="form-control"
+                onChange={inputHandle}
+                name="lastName"
+                value={registerInputData.lastName}
+                placeholder="Last Name"
+                id="lastName"
+              />
+            </div>
             <div className="form-group">
               <label htmlFor="username">User Name</label>
               <input

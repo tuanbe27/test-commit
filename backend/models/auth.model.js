@@ -17,6 +17,14 @@ const userSchema = new Schema(
       required: true,
       select: false,
     },
+    firstName: {
+      type: String,
+      required: true,
+    },
+    lastName: {
+      type: String,
+      required: true,
+    },
     image: {
       type: String,
       required: true,
