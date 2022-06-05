@@ -6,15 +6,8 @@ const bcrypt = require('bcrypt');
 const path = require('path');
 const jwt = require('jsonwebtoken');
 const { cloudinary } = require('../config/cloudinary');
+const { isFileValid } = require('../shared.js/checkExtFile')
 
-const isFileValid = (file) => {
-  const type = file.originalFilename.split('.').pop();
-  const validTypes = ['jpg', 'jpeg', 'png'];
-  if (validTypes.indexOf(type) === -1) {
-    return false;
-  }
-  return true;
-};
 
 module.exports.userRegister = (req, res) => {
   const form = new formidable.IncomingForm();
@@ -109,11 +102,13 @@ module.exports.userRegister = (req, res) => {
       });
 
       const payload = {
-        id: newUser._id,
+        _id: newUser._id,
         email: newUser.email,
         username: newUser.username,
         image: newUser.image,
-        fullName: lastName + ' ' + firstName,
+        lastName: newUser.lastName,
+        firstName: newUser.firstName,
+        fullName: newUser.lastName + ' ' + newUser.firstName,
       };
 
       const token = await jwt.sign(payload, process.env.JWT_SECRET, {
@@ -167,7 +162,17 @@ module.exports.userLogin = async (req, res) => {
   }
 
   try {
-    const getUserInfo = await User.findOne({ email }, { password: 1 });
+    const getUserInfo = await User.findOne(
+      { email },
+      {
+        password: 1,
+        email: 1,
+        username: 1,
+        image: 1,
+        lastName: 1,
+        firstName: 1,
+      }
+    );
 
     if (!getUserInfo) {
       return res.status(404).json({
@@ -182,22 +187,34 @@ module.exports.userLogin = async (req, res) => {
         errorMessage: 'Your password is not exactly',
       });
     }
+    const payload = {
+      _id: getUserInfo._id,
+      email: getUserInfo.email,
+      username: getUserInfo.username,
+      image: getUserInfo.image,
+      fullName: getUserInfo.firstName + ' ' + getUserInfo.lastName,
+      firstName: getUserInfo.firstName,
+      lastName: getUserInfo.lastName,
+    };
 
-    const token = jwt.sign(
-      {
-        id: getUserInfo._id,
-        email: getUserInfo.email,
-        username: getUserInfo.username,
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES }
-    );
-
-    res.status(200).json({
-      status: 'Success',
-      message: 'Login Successful',
-      token,
+    const token = await jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRES,
     });
+
+    res
+      .status(200)
+      .cookie('authToken', token, {
+        httpOnly: true,
+        secure: true,
+        expires: new Date(
+          Date.now() + process.env.TOKEN_AGE * 24 * 60 * 60 * 1000
+        ),
+      })
+      .json({
+        status: 'Success',
+        message: 'Login Successful',
+        token,
+      });
   } catch (error) {
     console.log(error);
     res.status(500).json({

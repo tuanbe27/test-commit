@@ -4,6 +4,7 @@ import thunkMiddleware from 'redux-thunk';
 
 import { authReducer } from './reducers/auth.reducer.js';
 import { messengerReducer } from './reducers/messenger.reducer.js';
+
 const middleware = [thunkMiddleware];
 
 const rootReducer = combineReducers({

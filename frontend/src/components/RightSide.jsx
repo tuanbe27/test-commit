@@ -4,46 +4,83 @@ import { IoEllipsisVertical } from 'react-icons/io5';
 import Message from './Message';
 import MessageSend from './MessageSend';
 import FriendInfo from './FriendInfo';
-import { useSelector } from 'react-redux';
 
-const RightSide = () => {
-  const { myInfo } = useSelector((state) => state.auth);
+const RightSide = ({
+  currentFriend,
+  inputHandle,
+  newMessage,
+  sendMessageHandler,
+  handleKeyDown,
+  messages,
+  myInfo,
+  scrollRef,
+  handleSendEmoji,
+  handleSendImage,
+  isLoading,
+  messageInputRef,
+  handleFocusMessage,
+  activeUser,
+}) => {
   return (
-    <div className="col-9">
-      <div className="right-side">
-        <input type="checkbox" id="dot" />
-        <div className="row">
-          <div className="col-8">
-            <div className="message-screen">
-              <div className="header">
-                <div className="image-name">
-                  <div className="image">
-                    <img src={myInfo.image} alt="" />
+    <div className='col-9'>
+      <div className='right-side'>
+        <input type='checkbox' id='dot' />
+        <div className='row'>
+          <div className='col-8'>
+            <div className='message-screen'>
+              <div className='header'>
+                <div className='image-name'>
+                  <div className='image'>
+                    <img src={currentFriend.image} alt='' />
+                    {activeUser &&
+                    activeUser.length &&
+                    activeUser.some(
+                      (user) => user.userId === currentFriend._id
+                    ) ? (
+                      <div className='active-icon'></div>
+                    ) : (
+                      ''
+                    )}
                   </div>
-                  <div className="name">
-                    <h3>{myInfo.username}</h3>
+                  <div className='name'>
+                    <h3>{currentFriend.fullName}</h3>
                   </div>
                 </div>
-                <div className="icons">
-                  <div className="icon">
+                <div className='icons'>
+                  <div className='icon'>
                     <FaPhoneAlt />
                   </div>
-                  <div className="icon">
+                  <div className='icon'>
                     <FaVideo />
                   </div>
-                  <label htmlFor="dot">
-                    <div className="icon">
+                  <label htmlFor='dot'>
+                    <div className='icon'>
                       <IoEllipsisVertical />
                     </div>
                   </label>
                 </div>
               </div>
-              <Message />
-              <MessageSend />
+              <Message
+                messages={messages}
+                currentFriend={currentFriend}
+                myInfo={myInfo}
+                scrollRef={scrollRef}
+                isLoading={isLoading}
+                handleFocusMessage={handleFocusMessage}
+              />
+              <MessageSend
+                inputHandle={inputHandle}
+                newMessage={newMessage}
+                sendMessageHandler={sendMessageHandler}
+                handleKeyDown={handleKeyDown}
+                handleSendEmoji={handleSendEmoji}
+                handleSendImage={handleSendImage}
+                messageInputRef={messageInputRef}
+              />
             </div>
           </div>
-          <div className="col-4">
-            <FriendInfo />
+          <div className='col-4'>
+            <FriendInfo activeUser={activeUser} currentFriend={currentFriend} />
           </div>
         </div>
       </div>

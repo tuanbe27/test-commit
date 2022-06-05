@@ -79,10 +79,10 @@
         }
     }
     .emoji-section{
-        width: 200px;
+        width: 300px;
         background: #0e131d;
         position: absolute;
-        right: 60px;
+        right: 90px;
         padding: 6px;
         bottom: 50px;
         border-radius: 8px;
@@ -90,8 +90,8 @@
         display: none;
         .emoji{
             display: grid;
-            grid-template-columns: repeat(7,1fr);
-            grid-gap: 4px;
+            grid-template-columns: repeat(10,1fr);
+            grid-gap: 6px;
             span{
                 cursor: pointer;
             }
