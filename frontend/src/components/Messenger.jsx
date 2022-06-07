@@ -24,6 +24,7 @@ const Messenger = () => {
   const [currentFriend, setCurrentFriend] = useState('');
   const [newMessage, setNewMessage] = useState('');
   const [socketMessage, setSocketMessage] = useState('');
+  const [typing, setTyping] = useState('');
   const [activeUser, setActiveUser] = useState([]);
 
   const { friends, messages, isLoading } = useSelector(
@@ -33,6 +34,12 @@ const Messenger = () => {
 
   const inputHandle = (e) => {
     setNewMessage(e.target.value);
+
+    socket.current.emit(`userTyping`, {
+      senderId: myInfo._id,
+      receiverId: currentFriend._id,
+      message: e.target.value,
+    });
   };
 
   const sendMessageHandler = (e) => {
@@ -120,6 +127,22 @@ const Messenger = () => {
       const imageName = e.target.files[0].name;
       const newImageName = Date.now() + '_' + imageName;
 
+      socket.current.emit(`test`, {
+        senderId: myInfo._id,
+        receiverId: currentFriend._id,
+      });
+
+      socket.current.emit('sendMessage', {
+        senderId: myInfo._id,
+        receiverId: currentFriend._id,
+        message: {
+          text: '',
+          image: newImageName,
+        },
+        extension: imageName.split('.').pop(),
+        time: new Date(),
+      });
+
       const formData = new FormData();
 
       formData.append('senderId', myInfo._id);
@@ -135,6 +158,10 @@ const Messenger = () => {
     socket.current = io('ws://localhost:3001');
     socket.current.on('getMessage', (data) => {
       setSocketMessage(data);
+    });
+
+    socket.current.on('typing', (data) => {
+      setTyping(data);
     });
   }, []);
 
@@ -166,42 +193,42 @@ const Messenger = () => {
   }, [currentFriend, dispatch, myInfo._id, socketMessage]);
 
   return (
-    <div className='messenger'>
-      <div className='row'>
-        <div className='col-3'>
-          <div className='left-side'>
-            <div className='top'>
-              <div className='image-name'>
-                <div className='image'>
-                  <img src={myInfo.image} alt='' />
+    <div className="messenger">
+      <div className="row">
+        <div className="col-3">
+          <div className="left-side">
+            <div className="top">
+              <div className="image-name">
+                <div className="image">
+                  <img src={myInfo.image} alt="" />
                 </div>
-                <div className='name'>
+                <div className="name">
                   <h3>{myInfo.fullName}</h3>
                 </div>
               </div>
-              <div className='icons'>
-                <div className='icon'>
+              <div className="icons">
+                <div className="icon">
                   <FaEllipsisH />
                 </div>
-                <div className='icon'>
+                <div className="icon">
                   <FaEdit />
                 </div>
               </div>
             </div>
-            <div className='friend-search'>
-              <div className='search'>
+            <div className="friend-search">
+              <div className="search">
                 <button>
                   <FaSistrix />
                 </button>
                 <input
-                  type='text'
-                  placeholder='Search'
-                  className='form-control'
+                  type="text"
+                  placeholder="Search"
+                  className="form-control"
                 />
               </div>
             </div>
 
-            <div className='active-friends'>
+            <div className="active-friends">
               {activeUser && activeUser.length
                 ? activeUser.map((user) => {
                     return (
@@ -213,7 +240,7 @@ const Messenger = () => {
                   })
                 : ''}
             </div>
-            <div className='friends'>
+            <div className="friends">
               {friends && friends.length > 0
                 ? friends.map((fr) => {
                     return (
@@ -250,6 +277,7 @@ const Messenger = () => {
             messageInputRef={messageInputRef}
             handleFocusMessage={handleFocusMessage}
             activeUser={activeUser}
+            typing={typing}
           />
         ) : (
           ''

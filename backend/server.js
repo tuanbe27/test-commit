@@ -2,11 +2,11 @@ const express = require('express');
 const app = express();
 const http = require('http');
 const server = http.createServer(app);
-const io = require("socket.io")(server, {
+const io = require('socket.io')(server, {
   cors: {
-    origin: "*",
-    methods: ["GET", "POST"],
-  }
+    origin: '*',
+    methods: ['GET', 'POST'],
+  },
 });
 
 const cookieParser = require('cookie-parser');
@@ -25,10 +25,11 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(morgan('short'));
 
-
 io.on('connection', (socket) => {
   console.log('Connecting....');
-  handleSocket(socket, io)
+  global.io = io;
+  global.socket = socket;
+  handleSocket(socket, io);
 });
 
 app.get('/', (_, res) => {

@@ -12,7 +12,7 @@ import {
 const messengerState = {
   friends: [],
   messages: [],
-  isLoading: true
+  isLoading: true,
 };
 
 export const messengerReducer = (state = messengerState, action) => {
@@ -56,7 +56,7 @@ export const messengerReducer = (state = messengerState, action) => {
     return {
       ...state,
       messages: payload.messages,
-      isLoading: payload.isLoading
+      isLoading: payload.isLoading,
     };
   }
 
@@ -64,15 +64,15 @@ export const messengerReducer = (state = messengerState, action) => {
     return {
       ...state,
       messages: [],
-      isLoading: payload.isLoading
+      isLoading: payload.isLoading,
     };
   }
 
   if (type === IS_LOADING) {
     return {
       ...state,
-      isLoading: true
-    }
+      isLoading: true,
+    };
   }
 
   return state;

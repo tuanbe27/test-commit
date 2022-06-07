@@ -20,41 +20,42 @@ const RightSide = ({
   messageInputRef,
   handleFocusMessage,
   activeUser,
+  typing,
 }) => {
   return (
-    <div className='col-9'>
-      <div className='right-side'>
-        <input type='checkbox' id='dot' />
-        <div className='row'>
-          <div className='col-8'>
-            <div className='message-screen'>
-              <div className='header'>
-                <div className='image-name'>
-                  <div className='image'>
-                    <img src={currentFriend.image} alt='' />
+    <div className="col-9">
+      <div className="right-side">
+        <input type="checkbox" id="dot" />
+        <div className="row">
+          <div className="col-8">
+            <div className="message-screen">
+              <div className="header">
+                <div className="image-name">
+                  <div className="image">
+                    <img src={currentFriend.image} alt="" />
                     {activeUser &&
                     activeUser.length &&
                     activeUser.some(
                       (user) => user.userId === currentFriend._id
                     ) ? (
-                      <div className='active-icon'></div>
+                      <div className="active-icon"></div>
                     ) : (
                       ''
                     )}
                   </div>
-                  <div className='name'>
+                  <div className="name">
                     <h3>{currentFriend.fullName}</h3>
                   </div>
                 </div>
-                <div className='icons'>
-                  <div className='icon'>
+                <div className="icons">
+                  <div className="icon">
                     <FaPhoneAlt />
                   </div>
-                  <div className='icon'>
+                  <div className="icon">
                     <FaVideo />
                   </div>
-                  <label htmlFor='dot'>
-                    <div className='icon'>
+                  <label htmlFor="dot">
+                    <div className="icon">
                       <IoEllipsisVertical />
                     </div>
                   </label>
@@ -67,6 +68,7 @@ const RightSide = ({
                 scrollRef={scrollRef}
                 isLoading={isLoading}
                 handleFocusMessage={handleFocusMessage}
+                typing={typing}
               />
               <MessageSend
                 inputHandle={inputHandle}
@@ -79,7 +81,7 @@ const RightSide = ({
               />
             </div>
           </div>
-          <div className='col-4'>
+          <div className="col-4">
             <FriendInfo activeUser={activeUser} currentFriend={currentFriend} />
           </div>
         </div>

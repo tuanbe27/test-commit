@@ -1,9 +1,10 @@
 const User = require('../models/auth.model');
 const Message = require('../models/message.model');
 const { ObjectId } = require('mongoose').Types;
-const formidable = require('formidable'); 1
+const formidable = require('formidable');
 const { cloudinary } = require('../config/cloudinary');
-const { isFileValid } = require('../shared.js/checkExtFile')
+const { isFileValid } = require('../shared.js/checkExtFile');
+const fs = require('fs');
 
 const getFriends = async (req, res) => {
   try {
@@ -92,7 +93,7 @@ const getMessage = async (req, res) => {
       },
     ]);
 
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     res.status(200).json({
       status: 'Success',
@@ -111,9 +112,9 @@ const sendImage = async (req, res) => {
   const form = new formidable.IncomingForm();
   form.maxFileSize = 50 * 1024 * 1024; // 5MB
   form.parse(req, async (err, fields, files) => {
-    const { senderId, receiverId, newImageName } = fields
-    const { image } = files
-    const error = []
+    const { senderId, receiverId, newImageName } = fields;
+    const { image } = files;
+    const error = [];
 
     if (!senderId) {
       error.push('Please provide senderId');
@@ -149,25 +150,30 @@ const sendImage = async (req, res) => {
         errorMessage: 'The file type is not a valid type',
       });
     }
-
+    req.socket.on('test', (data) => {
+      console.log(data);
+    });
+    req.socket.on('sendMessage', (data) => {
+      console.log(data);
+    });
     try {
       const uploadToCloud = await cloudinary.v2.uploader.upload(
         image.filepath,
         {
-          filename_override: newImageName,
-          unique_filename: false,
+          public_id: newImageName,
         }
       );
+
       const insertMessage = await Message.create({
         senderId: ObjectId(senderId),
         receiverId: ObjectId(receiverId),
         message: {
           text: '',
-          image: uploadToCloud.url,
+          image: uploadToCloud.secure_url,
         },
       });
 
-      res.status(200).json({ status: 'Success', message: insertMessage })
+      res.status(200).json({ status: 'Success', message: insertMessage });
     } catch (error) {
       fs.unlinkSync(image.filepath);
       console.log(error);
@@ -176,7 +182,7 @@ const sendImage = async (req, res) => {
         errorMessage: error.message,
       });
     }
-  })
-}
+  });
+};
 
 module.exports = { getFriends, sendMessage, getMessage, sendImage };

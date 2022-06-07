@@ -6,8 +6,7 @@ const bcrypt = require('bcrypt');
 const path = require('path');
 const jwt = require('jsonwebtoken');
 const { cloudinary } = require('../config/cloudinary');
-const { isFileValid } = require('../shared.js/checkExtFile')
-
+const { isFileValid } = require('../shared.js/checkExtFile');
 
 module.exports.userRegister = (req, res) => {
   const form = new formidable.IncomingForm();
@@ -98,7 +97,7 @@ module.exports.userRegister = (req, res) => {
         firstName,
         lastName,
         password: await bcrypt.hash(password, 10),
-        image: uploadToCloud.url,
+        image: uploadToCloud.secure_url,
       });
 
       const payload = {
