@@ -93,8 +93,6 @@ const getMessage = async (req, res) => {
       },
     ]);
 
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
     res.status(200).json({
       status: 'Success',
       message: messages,
@@ -112,7 +110,7 @@ const sendImage = async (req, res) => {
   const form = new formidable.IncomingForm();
   form.maxFileSize = 50 * 1024 * 1024; // 5MB
   form.parse(req, async (err, fields, files) => {
-    const { senderId, receiverId, newImageName } = fields;
+    const { senderId, senderName, receiverId, newImageName } = fields;
     const { image } = files;
     const error = [];
 
@@ -150,12 +148,7 @@ const sendImage = async (req, res) => {
         errorMessage: 'The file type is not a valid type',
       });
     }
-    req.socket.on('test', (data) => {
-      console.log(data);
-    });
-    req.socket.on('sendMessage', (data) => {
-      console.log(data);
-    });
+
     try {
       const uploadToCloud = await cloudinary.v2.uploader.upload(
         image.filepath,
@@ -164,16 +157,21 @@ const sendImage = async (req, res) => {
         }
       );
 
-      const insertMessage = await Message.create({
+      let newMessage = {
         senderId: ObjectId(senderId),
         receiverId: ObjectId(receiverId),
         message: {
           text: '',
           image: uploadToCloud.secure_url,
         },
-      });
+      };
+
+      const insertMessage = await Message.create(newMessage);
 
       res.status(200).json({ status: 'Success', message: insertMessage });
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      newMessage.senderName = senderName;
+      global.io.emit('getMessage', newMessage);
     } catch (error) {
       fs.unlinkSync(image.filepath);
       console.log(error);

@@ -12,10 +12,17 @@ import ActiveFriend from './ActiveFriend';
 import Friends from './Friends';
 import RightSide from './RightSide';
 
+import toast, { Toaster } from 'react-hot-toast';
+import useSound from 'use-sound';
 import io from 'socket.io-client';
+import notificationSound from '../audio/notification.mp3';
+import sendingSound from '../audio/sending.mp3';
 
 const Messenger = () => {
   const dispatch = useDispatch();
+
+  const [notificationPlay] = useSound(notificationSound);
+  const [sendingPlay] = useSound(sendingSound);
 
   const scrollRef = useRef();
   const socket = useRef();
@@ -32,9 +39,20 @@ const Messenger = () => {
   );
   const { myInfo } = useSelector((state) => state.auth);
 
+  // Socket
+  useEffect(() => {
+    socket.current = io('ws://localhost:3001');
+    socket.current.on('getMessage', (data) => {
+      setSocketMessage(data);
+    });
+
+    socket.current.on('typing', (data) => {
+      setTyping(data);
+    });
+  }, []);
+
   const inputHandle = (e) => {
     setNewMessage(e.target.value);
-
     socket.current.emit(`userTyping`, {
       senderId: myInfo._id,
       receiverId: currentFriend._id,
@@ -44,6 +62,7 @@ const Messenger = () => {
 
   const sendMessageHandler = (e) => {
     e.preventDefault();
+    sendingPlay();
     let data = {
       senderId: myInfo._id,
       receiverId: currentFriend._id,
@@ -52,6 +71,7 @@ const Messenger = () => {
 
     socket.current.emit('sendMessage', {
       senderId: myInfo._id,
+      senderName: myInfo.firstName,
       receiverId: currentFriend._id,
       message: {
         text: '❤',
@@ -69,6 +89,7 @@ const Messenger = () => {
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
+      sendingPlay();
       let data = {
         senderId: myInfo._id,
         receiverId: currentFriend._id,
@@ -78,6 +99,7 @@ const Messenger = () => {
       if (newMessage.trim().length) {
         socket.current.emit('sendMessage', {
           senderId: myInfo._id,
+          senderName: myInfo.firstName,
           receiverId: currentFriend._id,
           message: {
             text: newMessage.trim(),
@@ -85,7 +107,11 @@ const Messenger = () => {
           },
           time: new Date(),
         });
-
+        socket.current.emit(`userTyping`, {
+          senderId: myInfo._id,
+          receiverId: currentFriend._id,
+          message: '',
+        });
         dispatch(sendMessage(data));
         setNewMessage('');
       }
@@ -119,51 +145,30 @@ const Messenger = () => {
 
   const handleSendEmoji = (emo) => {
     setNewMessage(newMessage + emo);
+    socket.current.emit(`userTyping`, {
+      senderId: myInfo._id,
+      receiverId: currentFriend._id,
+      message: newMessage + emo,
+    });
     messageInputRef.current.focus();
   };
 
   const handleSendImage = (e) => {
     if (e.target.files.length !== 0) {
+      sendingPlay();
       const imageName = e.target.files[0].name;
       const newImageName = Date.now() + '_' + imageName;
-
-      socket.current.emit(`test`, {
-        senderId: myInfo._id,
-        receiverId: currentFriend._id,
-      });
-
-      socket.current.emit('sendMessage', {
-        senderId: myInfo._id,
-        receiverId: currentFriend._id,
-        message: {
-          text: '',
-          image: newImageName,
-        },
-        extension: imageName.split('.').pop(),
-        time: new Date(),
-      });
 
       const formData = new FormData();
 
       formData.append('senderId', myInfo._id);
+      formData.append('senderName', myInfo.firstName);
       formData.append('receiverId', currentFriend._id);
       formData.append('newImageName', newImageName);
       formData.append('image', e.target.files[0]);
       dispatch(sendImageMassage(formData));
     }
   };
-
-  // Socket
-  useEffect(() => {
-    socket.current = io('ws://localhost:3001');
-    socket.current.on('getMessage', (data) => {
-      setSocketMessage(data);
-    });
-
-    socket.current.on('typing', (data) => {
-      setTyping(data);
-    });
-  }, []);
 
   useEffect(() => {
     socket.current.emit('addUser', myInfo._id, myInfo);
@@ -192,8 +197,29 @@ const Messenger = () => {
     }
   }, [currentFriend, dispatch, myInfo._id, socketMessage]);
 
+  useEffect(() => {
+    if (
+      socketMessage &&
+      socketMessage.senderId !== currentFriend._id &&
+      socketMessage.receiverId === myInfo._id
+    ) {
+      notificationPlay();
+      toast.success(`${socketMessage.senderName} send a new message`);
+      setSocketMessage('');
+    }
+  }, [currentFriend._id, myInfo._id, notificationPlay, socketMessage]);
+
   return (
     <div className="messenger">
+      <Toaster
+        position={'top-right'}
+        reverseOrder={false}
+        toastOptions={{
+          style: {
+            fontSize: '18px',
+          },
+        }}
+      />
       <div className="row">
         <div className="col-3">
           <div className="left-side">

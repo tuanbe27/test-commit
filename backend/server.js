@@ -2,7 +2,7 @@ const express = require('express');
 const app = express();
 const http = require('http');
 const server = http.createServer(app);
-const io = require('socket.io')(server, {
+global.io = require('socket.io')(server, {
   cors: {
     origin: '*',
     methods: ['GET', 'POST'],
@@ -25,9 +25,8 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(morgan('short'));
 
-io.on('connection', (socket) => {
-  console.log('Connecting....');
-  global.io = io;
+global.io.on('connection', (socket) => {
+  console.log(`Connected with deviceId ${socket.id}`);
   global.socket = socket;
   handleSocket(socket, io);
 });

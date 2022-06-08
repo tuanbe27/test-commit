@@ -25,6 +25,7 @@ module.exports.handleSocket = (socket, io) => {
     if (user) {
       socket.to(user.socketId).emit('getMessage', {
         senderId: data.senderId,
+        senderName: data.senderName,
         receiverId: data.receiverId,
         createdAt: data.time,
         message: {
@@ -38,7 +39,6 @@ module.exports.handleSocket = (socket, io) => {
   socket.on('userTyping', (data) => {
     const user = findFriend(data.receiverId);
     if (user) {
-      console.log('ok');
       socket.to(user.socketId).emit('typing', {
         senderId: data.senderId,
         receiverId: data.receiverId,

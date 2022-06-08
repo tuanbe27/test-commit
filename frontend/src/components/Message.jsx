@@ -74,8 +74,9 @@ const Message = ({
           </div>
         )}
       </div>
-
-      {typing && typing.message && typing.senderId === currentFriend._id ? (
+      {typing &&
+      typing.message.length &&
+      typing.senderId === currentFriend._id ? (
         <div className="typing-message">
           <div className="fd-message">
             <div className="image-message-time">
