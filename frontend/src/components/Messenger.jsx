@@ -278,7 +278,7 @@ const Messenger = () => {
                               : 'hover-friend'
                           }
                         >
-                          <Friends data={fr} />
+                          <Friends myInfo={myInfo} friend={fr} />
                         </div>
                       </div>
                     );

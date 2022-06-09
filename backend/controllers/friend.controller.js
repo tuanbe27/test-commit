@@ -34,6 +34,76 @@ const getFriends = async (req, res) => {
   }
 };
 
+const getFriendWithLastMessage = async (req, res) => {
+  try {
+    const { _id, email } = req.user;
+    const listFriends = await User.aggregate([
+      {
+        $match: { email: { $ne: email } },
+      },
+      {
+        $sort: { firstName: 1 },
+      },
+      {
+        $lookup: {
+          from: 'messages',
+          let: { userId: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $or: [
+                    {
+                      $and: [
+                        { $eq: ['$senderId', '$$userId'] },
+                        {
+                          $eq: ['$receiverId', ObjectId(_id)],
+                        },
+                      ],
+                    },
+                    {
+                      $and: [
+                        {
+                          $eq: ['$senderId', ObjectId(_id)],
+                        },
+                        { $eq: ['$receiverId', '$$userId'] },
+                      ],
+                    },
+                  ],
+                },
+              },
+            },
+            {
+              $limit: 1,
+            },
+          ],
+          as: 'messages',
+        },
+      },
+      // {
+      //   $match: { 'messages.status': { $exists: true } },
+      // },
+      {
+        $project: {
+          _id: 1,
+          username: 1,
+          email: 1,
+          image: 1,
+          fullName: { $concat: ['$firstName', ' ', '$lastName'] },
+          firstName: 1,
+          lastName: 1,
+          msgInfo: '$messages',
+        },
+      },
+    ]);
+    console.log(listFriends[0]);
+    res.status(200).json({ friends: listFriends });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ errorMessage: 'Internal Server Error' });
+  }
+};
+
 const sendMessage = async (req, res) => {
   const { senderId, receiverId, message } = req.body;
   if (senderId !== req.user._id) {
@@ -82,12 +152,12 @@ const getMessage = async (req, res) => {
           ],
         },
       },
-      {
-        $sort: { createdAt: -1 },
-      },
-      {
-        $limit: 20,
-      },
+      // {
+      //   $sort: { createdAt: -1 },
+      // },
+      // {
+      //   $limit: 20,
+      // },
       {
         $sort: { createdAt: 1 },
       },
@@ -171,6 +241,7 @@ const sendImage = async (req, res) => {
       res.status(200).json({ status: 'Success', message: insertMessage });
       await new Promise((resolve) => setTimeout(resolve, 500));
       newMessage.senderName = senderName;
+      //emit socket
       global.io.emit('getMessage', newMessage);
     } catch (error) {
       fs.unlinkSync(image.filepath);
@@ -183,4 +254,10 @@ const sendImage = async (req, res) => {
   });
 };
 
-module.exports = { getFriends, sendMessage, getMessage, sendImage };
+module.exports = {
+  getFriends,
+  sendMessage,
+  getMessage,
+  sendImage,
+  getFriendWithLastMessage,
+};

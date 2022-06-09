@@ -5,10 +5,9 @@ import {
   SEND_MESSAGE_SUCCESS,
 } from '../types/messenger.type';
 
-
 export const getFriends = () => async (dispatch) => {
   try {
-    const response = await axios.get('/api/messenger/friends');
+    const response = await axios.get('/api/messenger/friends/messages');
     dispatch({
       type: GET_FRIENDS_SUCCESS,
       payload: {
@@ -26,9 +25,9 @@ export const sendMessage = (data) => async (dispatch) => {
     dispatch({
       type: SEND_MESSAGE_SUCCESS,
       payload: {
-        message: response.data.message
-      }
-    })
+        message: response.data.message,
+      },
+    });
   } catch (error) {
     console.log(error.response.data);
   }
@@ -41,7 +40,7 @@ export const getMessages = (id) => async (dispatch) => {
       type: GET_MESSAGE_SUCCESS,
       payload: {
         messages: response.data.message,
-        isLoading: false
+        isLoading: false,
       },
     });
   } catch (error) {
@@ -61,4 +60,4 @@ export const sendImageMassage = (data) => async (dispatch) => {
   } catch (error) {
     console.log(error.response.data);
   }
-}
+};
