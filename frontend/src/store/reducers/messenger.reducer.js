@@ -12,6 +12,7 @@ import {
 const messengerState = {
   friends: [],
   messages: [],
+  messageSent: false,
   isLoading: true,
 };
 
@@ -34,6 +35,7 @@ export const messengerReducer = (state = messengerState, action) => {
   if (type === SEND_MESSAGE_SUCCESS) {
     return {
       ...state,
+      messageSent: true,
       messages: [...state.messages, payload.message],
     };
   }

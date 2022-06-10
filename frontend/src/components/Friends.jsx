@@ -1,4 +1,5 @@
 import React from 'react';
+import moment from 'moment';
 
 const Friends = ({ friend, myInfo }) => {
   const { msgInfo } = friend;
@@ -18,8 +19,31 @@ const Friends = ({ friend, myInfo }) => {
             ) : (
               <span>{friend.firstName + ': '}</span>
             )}
+            {msgInfo && msgInfo.message.text ? (
+              <span>
+                {msgInfo.message.text.length >= 10
+                  ? msgInfo.message.text.slice(0, 10) + '... '
+                  : msgInfo.message.text + ' '}
+              </span>
+            ) : msgInfo && msgInfo.message.image ? (
+              <span>Send an image </span>
+            ) : (
+              <span>Connect you</span>
+            )}
+            <span>
+              · {msgInfo && moment(msgInfo.createdAt).startOf('mini').fromNow()}
+            </span>
           </div>
         </div>
+        {myInfo._id === msgInfo?.senderId ? (
+          <div className="seen-unseen-icon">
+            <img src={friend.image} alt="" />
+          </div>
+        ) : (
+          <div className="seen-unseen-icon">
+            <div className="seen-icon"></div>
+          </div>
+        )}
       </div>
     </div>
   );

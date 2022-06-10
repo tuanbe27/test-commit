@@ -74,15 +74,18 @@ const getFriendWithLastMessage = async (req, res) => {
               },
             },
             {
+              $sort: { createdAt: -1 },
+            },
+            {
               $limit: 1,
             },
           ],
           as: 'messages',
         },
       },
-      // {
-      //   $match: { 'messages.status': { $exists: true } },
-      // },
+      {
+        $match: { 'messages.status': { $exists: true } },
+      },
       {
         $project: {
           _id: 1,
@@ -92,11 +95,13 @@ const getFriendWithLastMessage = async (req, res) => {
           fullName: { $concat: ['$firstName', ' ', '$lastName'] },
           firstName: 1,
           lastName: 1,
-          msgInfo: '$messages',
+          msgInfo: { $arrayElemAt: ['$messages', 0] },
         },
       },
+      {
+        $sort: { 'msgInfo.createdAt': -1 },
+      },
     ]);
-    console.log(listFriends[0]);
     res.status(200).json({ friends: listFriends });
   } catch (error) {
     console.log(error);
