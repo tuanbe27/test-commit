@@ -1,6 +1,5 @@
 import React from 'react';
 import moment from 'moment';
-import LoadingSpinner from './LoadingSpinner';
 
 const Message = ({
   messages,
@@ -15,9 +14,9 @@ const Message = ({
     <>
       <div className="message-show" onClick={handleFocusMessage}>
         {isLoading ? (
-          <LoadingSpinner />
+          <></>
         ) : messages && messages.length ? (
-          messages.map((message, index) => {
+          messages.map((message) => {
             let view = '';
             if (message.senderId === myInfo._id) {
               view = (

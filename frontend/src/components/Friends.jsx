@@ -1,8 +1,11 @@
 import React from 'react';
 import moment from 'moment';
 
-const Friends = ({ friend, myInfo }) => {
-  const { msgInfo } = friend;
+const Friends = ({ friend, myInfo, lastMessage }) => {
+  let { msgInfo } = friend;
+  if (lastMessage) {
+    msgInfo = lastMessage;
+  }
   return (
     <div className="friend" id={friend._id}>
       <div className="friend-image">

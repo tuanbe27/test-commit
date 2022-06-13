@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState, useRef } from 'react';
 import { FaEllipsisH, FaEdit, FaSistrix } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
@@ -7,7 +8,11 @@ import {
   sendMessage,
   sendImageMassage,
 } from '../store/actions/messenger.action';
-import { IS_LOADING, SOCKET_MESSAGE } from '../store/types/messenger.type';
+import {
+  IS_LOADING,
+  MESSAGE_SEND_SUCCESS_CLEAR,
+  SOCKET_MESSAGE,
+} from '../store/types/messenger.type';
 import ActiveFriend from './ActiveFriend';
 import Friends from './Friends';
 import RightSide from './RightSide';
@@ -28,21 +33,24 @@ const Messenger = () => {
   const socket = useRef();
   const messageInputRef = useRef(null);
 
+  const { friends, messages, isLoading, isSend } = useSelector(
+    (state) => state.messenger
+  );
+  const { myInfo } = useSelector((state) => state.auth);
+
   const [currentFriend, setCurrentFriend] = useState('');
   const [newMessage, setNewMessage] = useState('');
   const [socketMessage, setSocketMessage] = useState('');
   const [typing, setTyping] = useState('');
   const [activeUser, setActiveUser] = useState([]);
-
-  const { friends, messages, isLoading } = useSelector(
-    (state) => state.messenger
-  );
-  const { myInfo } = useSelector((state) => state.auth);
+  const [listFriends, setListFriends] = useState([]);
+  const [lastMessage, setLastMessage] = useState('');
 
   // Socket
   useEffect(() => {
     socket.current = io('ws://localhost:3001');
     socket.current.on('getMessage', (data) => {
+      console.log(data);
       setSocketMessage(data);
     });
 
@@ -65,20 +73,10 @@ const Messenger = () => {
     sendingPlay();
     let data = {
       senderId: myInfo._id,
+      senderName: myInfo.firstName,
       receiverId: currentFriend._id,
       message: '❤',
     };
-
-    socket.current.emit('sendMessage', {
-      senderId: myInfo._id,
-      senderName: myInfo.firstName,
-      receiverId: currentFriend._id,
-      message: {
-        text: '❤',
-        image: '',
-      },
-      time: new Date(),
-    });
 
     dispatch(sendMessage(data));
   };
@@ -97,18 +95,9 @@ const Messenger = () => {
       };
 
       if (newMessage.trim().length) {
-        socket.current.emit('sendMessage', {
-          senderId: myInfo._id,
-          senderName: myInfo.firstName,
-          receiverId: currentFriend._id,
-          message: {
-            text: newMessage.trim(),
-            image: '',
-          },
-          time: new Date(),
-        });
         socket.current.emit(`userTyping`, {
           senderId: myInfo._id,
+          senderName: myInfo.firstName,
           receiverId: currentFriend._id,
           message: '',
         });
@@ -123,9 +112,13 @@ const Messenger = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    if (friends && friends.length > 0) {
-      setCurrentFriend(friends[0]);
+    if (listFriends && listFriends.length > 0) {
+      setCurrentFriend(listFriends[0]);
     }
+  }, [dispatch, listFriends]);
+
+  useEffect(() => {
+    setListFriends(friends);
   }, [dispatch, friends]);
 
   useEffect(() => {
@@ -193,11 +186,14 @@ const Messenger = () => {
             message: socketMessage,
           },
         });
+
+        setLastMessage(socketMessage);
       }
     }
   }, [currentFriend, dispatch, myInfo._id, socketMessage]);
 
   useEffect(() => {
+    console.log(socketMessage);
     if (
       socketMessage &&
       socketMessage.senderId !== currentFriend._id &&
@@ -208,6 +204,15 @@ const Messenger = () => {
       setSocketMessage('');
     }
   }, [currentFriend._id, myInfo._id, notificationPlay, socketMessage]);
+
+  useEffect(() => {
+    if (isSend) {
+      const lastMessage = messages[messages.length - 1];
+      setLastMessage(lastMessage);
+      socket.current.emit('sendMessage', lastMessage);
+      dispatch({ type: MESSAGE_SEND_SUCCESS_CLEAR });
+    }
+  }, [isSend]);
 
   return (
     <div className="messenger">
@@ -267,8 +272,8 @@ const Messenger = () => {
                 : ''}
             </div>
             <div className="friends">
-              {friends && friends.length > 0
-                ? friends.map((fr) => {
+              {listFriends && listFriends.length > 0
+                ? listFriends.map((fr) => {
                     return (
                       <div onClick={() => setCurrentFriend(fr)}>
                         <div
@@ -278,7 +283,15 @@ const Messenger = () => {
                               : 'hover-friend'
                           }
                         >
-                          <Friends myInfo={myInfo} friend={fr} />
+                          {currentFriend._id === fr._id ? (
+                            <Friends
+                              myInfo={myInfo}
+                              friend={fr}
+                              lastMessage={lastMessage}
+                            />
+                          ) : (
+                            <Friends myInfo={myInfo} friend={fr} />
+                          )}
                         </div>
                       </div>
                     );

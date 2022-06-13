@@ -7,12 +7,13 @@ import {
   SEND_MESSAGE_FAIL,
   IS_LOADING,
   SOCKET_MESSAGE,
+  MESSAGE_SEND_SUCCESS_CLEAR,
 } from '../types/messenger.type';
 
 const messengerState = {
   friends: [],
   messages: [],
-  messageSent: false,
+  isSend: false,
   isLoading: true,
 };
 
@@ -35,7 +36,7 @@ export const messengerReducer = (state = messengerState, action) => {
   if (type === SEND_MESSAGE_SUCCESS) {
     return {
       ...state,
-      messageSent: true,
+      isSend: true,
       messages: [...state.messages, payload.message],
     };
   }
@@ -74,6 +75,13 @@ export const messengerReducer = (state = messengerState, action) => {
     return {
       ...state,
       isLoading: true,
+    };
+  }
+
+  if (type === MESSAGE_SEND_SUCCESS_CLEAR) {
+    return {
+      ...state,
+      isSend: false,
     };
   }
 

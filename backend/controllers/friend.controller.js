@@ -110,7 +110,7 @@ const getFriendWithLastMessage = async (req, res) => {
 };
 
 const sendMessage = async (req, res) => {
-  const { senderId, receiverId, message } = req.body;
+  const { senderId, receiverId, message, senderName } = req.body;
   if (senderId !== req.user._id) {
     return res.status(400).json({ errorMessage: 'Invalid request!' });
   }
@@ -118,6 +118,7 @@ const sendMessage = async (req, res) => {
     const insertMessage = await Message.create({
       senderId: ObjectId(senderId),
       receiverId: ObjectId(receiverId),
+      senderName: senderName,
       message: {
         text: message,
         image: '',
@@ -137,6 +138,15 @@ const sendMessage = async (req, res) => {
 const getMessage = async (req, res) => {
   try {
     const { id } = req.params;
+    const limit = req.query.limit || 20;
+
+    if (!Number.parseInt(limit)) {
+      return res.status(400).json({
+        status: 'Fail',
+        message: 'Invalid request',
+      });
+    }
+
     const userId = req.user._id;
     const messages = await Message.aggregate([
       {
@@ -157,11 +167,11 @@ const getMessage = async (req, res) => {
           ],
         },
       },
+      {
+        $sort: { createdAt: -1 },
+      },
       // {
-      //   $sort: { createdAt: -1 },
-      // },
-      // {
-      //   $limit: 20,
+      //   $limit: Number.parseInt(limit),
       // },
       {
         $sort: { createdAt: 1 },
