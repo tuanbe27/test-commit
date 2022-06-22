@@ -48,7 +48,7 @@ const Messenger = () => {
 
   // Socket
   useEffect(() => {
-    socket.current = io('ws://localhost:3001');
+    socket.current = io('https://chat-app-node-mongoose.herokuapp.com/');
     socket.current.on('getMessage', (data) => {
       console.log(data);
       setSocketMessage(data);

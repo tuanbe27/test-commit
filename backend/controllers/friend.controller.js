@@ -269,10 +269,32 @@ const sendImage = async (req, res) => {
   });
 };
 
+const deleteImage = async (req, res) => {
+  const { senderId, receiverId } = req.body;
+  if (senderId !== req.user._id) {
+    return res.status(400).json({ errorMessage: 'Invalid request!' });
+  }
+  try {
+    const deleteImage = await Message.find()
+    .and([
+        { $and: [{senderId: senderId}, {receiverId: receiverId}] } ])
+    .remove();
+    res.status(200).json({
+      status: 'Success',
+      mess : 'you delete success !'
+    });
+  } catch (error) {
+    res.status(500).json({
+      errorMessage: 'Internal Server Error',
+    });
+  }
+};
+
 module.exports = {
   getFriends,
   sendMessage,
   getMessage,
   sendImage,
   getFriendWithLastMessage,
+  deleteImage,
 };

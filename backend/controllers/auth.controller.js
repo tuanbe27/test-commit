@@ -141,7 +141,6 @@ module.exports.userRegister = (req, res) => {
 
 module.exports.userLogin = async (req, res) => {
   const { email, password } = req.body;
-
   const error = [];
   if (!email) {
     error.push('Please provide your email');

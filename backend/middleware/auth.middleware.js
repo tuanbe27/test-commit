@@ -2,7 +2,10 @@ const jwt = require('jsonwebtoken');
 
 module.exports.authGuard = (req, res, next) => {
   try {
-    const token = req.cookies['authToken'];
+    const bearer = req.headers?.authorization;
+    const token = bearer.slice(6).trim();
+    // const token = req.cookies['authToken'];
+    console.log('token', token)
     if (!token) {
       return res.status(401).json({
         error: 'Invalid request!',

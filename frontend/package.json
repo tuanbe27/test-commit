@@ -55,5 +55,5 @@
   "devDependencies": {
     "webpack-dev-server": "^4.9.0"
   },
-  "proxy": "http://localhost:3001"
+  "proxy": "https://chat-app-node-mongoose.herokuapp.com/"
 }
