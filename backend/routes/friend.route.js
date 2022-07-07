@@ -14,6 +14,6 @@ router.get('/friends', authGuard, getFriends);
 router.get('/friends/messages', authGuard, getFriendWithLastMessage);
 router.post('/send', authGuard, sendMessage);
 router.post('/send-image', authGuard, sendImage);
-router.post('/delete-image',authGuard, deleteImage);
+router.post('/delete-image', authGuard, deleteImage);
 
 module.exports = router;

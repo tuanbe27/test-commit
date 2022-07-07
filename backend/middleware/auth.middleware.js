@@ -5,7 +5,7 @@ module.exports.authGuard = (req, res, next) => {
     const bearer = req.headers?.authorization;
     const token = bearer.slice(6).trim();
     // const token = req.cookies['authToken'];
-    console.log('token', token)
+    console.log('token', token);
     if (!token) {
       return res.status(401).json({
         error: 'Invalid request!',
@@ -19,7 +19,8 @@ module.exports.authGuard = (req, res, next) => {
     }
     req.user = decodedToken;
     next();
-  } catch {
+  } catch (error) {
+    console.log(error);
     return res.status(500).json({
       error: 'Internal Server Error',
     });

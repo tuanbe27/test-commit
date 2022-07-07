@@ -12,7 +12,7 @@ global.io = require('socket.io')(server, {
 const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
 
-require('dotenv').config({ path: 'backend/config/config.env' });
+require('dotenv').config({ path: './config/config.env' });
 require('./config/database')();
 const authRoute = require('./routes/auth.route');
 const messengerRoute = require('./routes/friend.route');
